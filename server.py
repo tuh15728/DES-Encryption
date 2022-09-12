@@ -4,8 +4,8 @@ from crypto import KeyManager, Des
 from sys import getsizeof
 import client
 
-serverNonce = None
-serverTag = None
+#serverNonce = None
+#serverTag = None
 
 class Server:
     def __init__(self, addr, port, buffer_size=1024):
@@ -43,7 +43,7 @@ if __name__ == '__main__':
         rec_ciphertext = server.recv(1024)
 
         # decrypt cipher text and print plain text
-        plaintext = client.my_des.decrypt(client.clientNonce, rec_ciphertext, client.clientTag)
+        plaintext = client.my_des.decrypt(client_keyman.load_nonce(), rec_ciphertext, client_keyman.load_tag())
         print("pt: ", str(plaintext), " || ct: ", rec_ciphertext)
 
         msg = input('> ')
@@ -53,7 +53,9 @@ if __name__ == '__main__':
         # TODO: your code here
         # set up DES algorithm
         # nonce: unique id for call to API || tag: authentication tag
-        server.serverNonce, ciphertext, server.serverTag = client.my_des.encrypt(msg)  # encode message in cipher text
+        serverNonce, ciphertext, serverTag = client.my_des.encrypt(msg)  # encode message in cipher text
+        client_keyman.nonce_to_file(serverNonce)
+        client_keyman.tag_to_file(serverTag)
 
         # send message in cipher text
         server.send(ciphertext)
