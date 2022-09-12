@@ -8,7 +8,6 @@ from bitstring import BitArray
 from typing import Iterable
 
 class KeyManager:
-
     def bitize(self, byts: bytes) -> 'list[int]':
         """
         bitize bytes
@@ -53,18 +52,18 @@ class KeyManager:
 
     def key_to_file(self, key: bytes):
         #open/create file to write key to
-        text_file = open("key.txt", "w")
-        text_file.write(str(key))
+        text_file = open("key.txt", "wb")
+        text_file.write(key)
         text_file.close()
 
     def load_key(self) -> bytes:
         # load the key from the file
-        f = open("key.txt", 'r')
-        str_key = f.read()
+        f = open("key.txt", 'rb')
+        key = f.read()
 
         #convert string to bytes
-        key = bytearray(str_key, 'utf-8')
-        key = bytes(key)
+        #key = bytearray(, 'utf-8')
+        #key = bytes(key)
         print(key)
 
         return key
@@ -73,6 +72,8 @@ class Des:
 
     def __init__(self):
         #generate the key
+        self.nonce = None
+        self.tag = None
         self.keyManager = KeyManager()
         self.key = self.keyManager.generate_key()
 
@@ -83,11 +84,14 @@ class Des:
         cipher = DES.new(self.keyManager.load_key(), DES.MODE_EAX)
         nonce = cipher.nonce
         ciphertext, tag = cipher.encrypt_and_digest(msg.encode('ascii'))
+        print(f'encrypt nonce: {nonce}, ciphertext:{ciphertext}, tag {tag}')
         return nonce, ciphertext, tag
 
     def decrypt(self, nonce, ciphertext, tag):
         cipher = DES.new(self.keyManager.load_key(), DES.MODE_EAX, nonce=nonce)
         plaintext = cipher.decrypt(ciphertext)
+        print(f'decrypt nonce: {nonce}, ciphertext:{ciphertext}, tag {tag}')
+        print(f'plaintext in decrypt: {plaintext}')
 
         try:
             cipher.verify(tag)

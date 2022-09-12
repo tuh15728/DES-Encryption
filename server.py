@@ -2,7 +2,10 @@ import socket
 
 from crypto import KeyManager, Des
 from sys import getsizeof
+import client
 
+serverNonce = None
+serverTag = None
 
 class Server:
     def __init__(self, addr, port, buffer_size=1024):
@@ -33,16 +36,26 @@ if __name__ == '__main__':
     server = Server('localhost', 9999)
     client_keyman = KeyManager()
     client_keyman.load_key()
-    des = Des()
 
     while True:
         # TODO: your code here
-        print(server.recv(1024).decode())
+        # receive cipher text
+        rec_ciphertext = server.recv(1024)
+
+        # decrypt cipher text and print plain text
+        plaintext = client.my_des.decrypt(client.clientNonce, rec_ciphertext, client.clientTag)
+        print("pt: ", str(plaintext), " || ct: ", rec_ciphertext)
+
         msg = input('> ')
         if msg == 'exit':
             break
 
         # TODO: your code here
-        server.send(bytes(msg, 'ascii'))
+        # set up DES algorithm
+        # nonce: unique id for call to API || tag: authentication tag
+        server.serverNonce, ciphertext, server.serverTag = client.my_des.encrypt(msg)  # encode message in cipher text
+
+        # send message in cipher text
+        server.send(ciphertext)
 
     server.close()

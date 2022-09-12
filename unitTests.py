@@ -29,8 +29,6 @@ class MyTestCase(unittest.TestCase):
         k3 = myDes.load_key()
         self.assertEqual(k3, k2)
 
-    def test_client_server(self):
-
 
 
 if __name__ == '__main__':
